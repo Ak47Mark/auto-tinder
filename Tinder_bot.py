@@ -38,7 +38,7 @@ num_requests = inputs.args.batch
 
 # Loads the model that is used for facial beauty prediction. 
 # This model is a pretrained ResNet50 from Keras, further trained on the SCUT-FBP5500 dataset. 
-FBP_model = keras.models.load_model('model2.h5')
+FBP_model = keras.models.load_model('models/' + inputs.args.model)
 
 # Creates the 'Tinder photos' folder if we want to save photos and it does not already exist.
 if not "Tinder photos" in os.listdir("."):
