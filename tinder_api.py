@@ -6,13 +6,13 @@ import requests
 
 confighost = 'https://api.gotinder.com'
 
-headers = {
-    'app_version': '6.9.4',
-    'platform': 'ios',
-    "content-type": "application/json",
-    "User-agent": "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)","X-Auth-Token": 'a15f3e38-0dc7-40b4-9e0e-55731d543682'
-}
-
+#headers = {
+#    'app_version': '6.9.4',
+#    'platform': 'ios',
+#    "content-type": "application/json",
+#    "User-agent": "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)",
+#    "X-Auth-Token": 'XXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXX'
+#}
 
 def get_auth_token(fb_auth_token, fb_user_id):
     if "error" in fb_auth_token:
@@ -42,7 +42,7 @@ def authverif(fb_access_token, fb_user_id):
     return True
 
 
-def get_recommendations():
+def get_recommendations(headers):
     '''
     Returns a list of users that you can swipe on
     '''
@@ -148,7 +148,7 @@ def get_recs_v2():
         print('excepted')
 
 
-def get_person(id):
+def get_person(id, headers):
     '''
     Gets a user's profile via their id
     '''
@@ -179,7 +179,7 @@ def superlike(person_id):
         print("Something went wrong. Could not superlike:", e)
 
 
-def like(person_id):
+def like(person_id, headers):
     try:
         url = confighost + '/like/%s' % person_id
         r = requests.get(url, headers=headers)
