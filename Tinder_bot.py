@@ -142,8 +142,8 @@ for request_ix in range(num_requests):
                         T_profile['like'] = 50
                     T_profile['like'] -= 1
                     liked = True
-                print("All: " + str(all_poeple) + " | Liked: " + str(liked_people)  + " | Likes remaining: " + str(T_profile['like']))
-                F = open('log.txt', 'a')
+                print("All: " + str(all_poeple) + " | Liked: " + str(liked_people)  + " / " + str(inputs.args.like) + " | Likes remaining: " + str(T_profile['like']))
+                F = open('data.db', 'a')
                 F.write(str(name)+', '+str(person_id)+', '+str(max_rating)+', '+str(liked) + "\n")
                 F.close()
 
