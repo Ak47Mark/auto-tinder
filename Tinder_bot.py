@@ -11,8 +11,27 @@ import urllib.request
 import keras.models
 import datetime
 from keras.preprocessing import image
+import argparse
+import inputs
+import profile
 
-num_requests = int(input('Input the number of request batches to swipe through (each batch is perhaps a couple of dozen people): '))
+if inputs.args.profile != None:
+    T_profile = profile.loadProfile(inputs.args.profile)
+    print('\x1b[1;30;44m' + "Profile loaded: " + T_profile['name'] + '\x1b[0m')
+else:
+    T_profile = profile.setNewProfile()
+    profile.saveProfile(T_profile['name'],T_profile['token'],T_profile['like'])
+
+headers = {
+    'app_version': '6.9.4',
+    'platform': 'ios',
+    "content-type": "application/json",
+    "User-agent": "Tinder/7.5.3 (iPhone; iOS 10.3.2; Scale/2.00)",
+    "X-Auth-Token": T_profile['token']
+}
+    
+#num_requests = int(input('Input the number of request batches to swipe through (each batch is perhaps a couple of dozen people): '))
+num_requests = inputs.args.batch
 
 # Tries to update location with given GPS coordinates (requires premium; can be done manually in browser otherwise).
 #api.update_location(10,8042723,106,6530501)
@@ -66,20 +85,25 @@ def extract_faces(image):
 
 # Get recommendations, analyze and swipe them.
 person_id=''
-swipes = []
-
+liked_people = 0
+all_poeple = 0
 for request_ix in range(num_requests):
     # Retrieve recommended profiles from Tinder.
-    for key, value in api.get_recommendations().items():
+    for key, value in api.get_recommendations(headers).items():
         if(key == "results"):
             # Loop over profiles.
             for person in value:
+                print("---------------------------------------")
+                all_poeple += 1
                 liked = False
                 ratings = [0]
                 for key, value in person.items():
                     if(key == "_id"):
                         person_id = value
                         print('Person id: ', person_id)
+                        person_data = api.get_person(person_id, headers)
+                        name = person_data["results"]["name"]
+                        print("Name: " + name)
                     if(key == "photos"):
                         photo_no = 0
                         # Loop of photos of a profile.
@@ -100,24 +124,35 @@ for request_ix in range(num_requests):
                                 img=image.load_img('Tinder photos/' + str(person_id)+'_'+str(photo_no)+'_'+str(i)+'.jpg')
                                 img=image.img_to_array(img)
                                 # Apply the neural network to predict face beauty.
+                                temp = img.reshape((1,) + img.shape)
                                 pred = FBP_model.predict(img.reshape((1,) + img.shape))
+                                print(pred)
                                 ratings.append(pred[0][0])
                                 i+=1
                             photo_no+=1
                 max_rating = max(ratings)
                 # If the maximal rating received for a profile's photo is greater than 3, like the profile. 
-                if max_rating>3:
-                    print(api.like(person_id))
+                if max_rating>=inputs.args.rating:
+                    liker = api.like(person_id, headers)
+                    print('\x1b[1;32;40m' + "LIKE!!" + '\x1b[0m')
+                    if liker["match"]:
+                        print('\x1b[6;30;42m' + "!! NEW MATCH !!" + '\x1b[0m')
+                    liked_people += 1
+                    if T_profile['like'] <= 0 and liker["likes_remaining"] > 0:
+                        T_profile['like'] = 50
+                    T_profile['like'] -= 1
                     liked = True
-                swipes.append((person_id,max_rating,liked))
+                print("All: " + str(all_poeple) + " | Liked: " + str(liked_people)  + " | Likes remaining: " + str(T_profile['like']))
+                F = open('log.txt', 'a')
+                F.write(str(name)+', '+str(person_id)+', '+str(max_rating)+', '+str(liked) + "\n")
+                F.close()
+
+                profile.saveProfile(T_profile['name'],T_profile['token'],T_profile['like'])
+
+                if liked_people == inputs.args.like:
+                    sys.exit('\x1b[0;31;40m' + "Likes disabled! Stop the process." + '\x1b[0m')
+                if T_profile['like'] <= 0:
+                    sys.exit('\x1b[6;30;41m' + "Out of Like!" + '\x1b[0m')
                 
-# Print operation info.
-print(swipes)
-
-# Operation info is saved to the log.txt file. 
-F = open('log.txt', 'a')
-
-for item in swipes:
-    F.write(str(item) + "\n")
     
-F.close()
+
