@@ -13,11 +13,12 @@ def loadData():
         listbox.insert(tk.END, person[0] + ' ' + person[2])
 
 def getPerson(event):
+    print(event)
     list_tuple = listbox.curselection()
     id = functools.reduce(lambda sub, elem: sub * 10 + elem, list_tuple)
-
+    print(people[id][0])
     profile = Image.open("Tinder photos/"+people[id][1]+"_1.jpg")
-    profile = profile.resize((480, 600), Image.ANTIALIAS)
+    profile = profile.resize((350, 350), Image.ANTIALIAS)
     profile = ImageTk.PhotoImage(profile)
     profile_label = tk.Label(image = profile)
     profile_label.image = profile
@@ -35,8 +36,9 @@ canvas.grid(columnspan=6, rowspan=4)
 listbox = tk.Listbox(root)
 listbox.grid(column = 1, row = 0)
 listbox.bind('<Double-1>', getPerson)
+listbox.bind('<KeyRelease>', getPerson)
 
-profile = Image.open("Tinder photos/5dc6a870c28cd9010001da7d_4.jpg")
+profile = Image.open("img/cover.png")
 profile = profile.resize((480, 600), Image.ANTIALIAS)
 profile = ImageTk.PhotoImage(profile)
 profile_label = tk.Label(image = profile)
