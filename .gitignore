@@ -1,4 +1,6 @@
-Tinder photos/*
-Tinder photos old/*
+__pycache__
+Tinder photos
+Tinder photos old
 log.txt
 *.profile
+models
